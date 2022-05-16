@@ -1,35 +1,26 @@
-import sqlite3
-from sqlite3 import Error
+from db.db_work import WorkDB
 
 
-class CreateDB:
+# Класс-потомок WorkDB, вызывается 1 раз для создания БД и структуры таблиц в ней
+class CreateDB(WorkDB):
 
     def __init__(self, path_db):
         # Создать базу
-        self.connection = self.get_connection(path_db)
+        super().__init__(path_db)
         # Получить код для создания таблиц
         self.tables = self.get_structure()
         # Создать таблицы
         for table in self.tables:
             self.execute_query(table)
 
-    def get_connection(self, path):
-        connection = None
-        try:
-            connection = sqlite3.connect(path)
-        except Error as e:
-            print(f"Ошибка при создании подключения-  '{e}' ")
-        return connection
-
     # Получить структуру таблиц БД
     def get_structure(self):
-
         queries = []
         # Таблица для типа станка
         create_types_machines = """
             CREATE TABLE IF NOT EXISTS types_machines (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT
+            name TEXT UNIQUE
         );
         """
         queries.append(create_types_machines)
@@ -38,7 +29,7 @@ class CreateDB:
         create_times_machines = """
             CREATE TABLE IF NOT EXISTS times_machines (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            value INTEGER
+            value INTEGER UNIQUE
         );
         """
         queries.append(create_times_machines)
@@ -46,8 +37,8 @@ class CreateDB:
         # Таблица для станка
         create_machines = """
             CREATE TABLE IF NOT EXISTS machines (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            number INTEGER NOT NULL,
+            id INTEGER PRIMARY KEY NOT NULL UNIQUE,
+            number INTEGER PRIMARY KEY NOT NULL UNIQUE,
             types_machines_id INTEGER NOT NULL,
             times_machines_id INTEGER NOT NULL,
             FOREIGN KEY (types_machines_id) REFERENCES types_machines (id),
@@ -60,7 +51,7 @@ class CreateDB:
         create_priority = """
             CREATE TABLE IF NOT EXISTS priority (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            value INTEGER
+            value INTEGER UNIQUE
         );
         """
         queries.append(create_priority)
@@ -69,7 +60,7 @@ class CreateDB:
         create_parts = """
             CREATE TABLE IF NOT EXISTS parts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            value INTEGER
+            value INTEGER UNIQUE
         );
         """
         queries.append(create_parts)
@@ -78,7 +69,7 @@ class CreateDB:
         create_operations = """
             CREATE TABLE IF NOT EXISTS operations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
+            name TEXT NOT NULL UNIQUE,
             weight_all REAL NOT NULL,
             weight_part REAL NOT NULL,
             types_machines_id INTEGER NOT NULL,
@@ -92,13 +83,3 @@ class CreateDB:
         queries.append(create_operations)
 
         return queries
-
-    # Выполнить запрос к БД
-    def execute_query(self, query):
-        cursor = self.connection.cursor()
-        try:
-            cursor.execute(query)
-            self.connection.commit()
-            print("Таблица создана")
-        except Error as e:
-            print(f"Ошибка при создании таблицы '{e}' ")
