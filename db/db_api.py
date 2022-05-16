@@ -54,16 +54,12 @@ class DB_API(WorkDB):
     def insert_machines_lazy(self, number, types_machines_value, times_machines_value):
         types_machines_id = self.select_id_types_machines_or_insert(types_machines_value)
         times_machines_id = self.select_id_times_machines_or_insert(times_machines_value)
-        insert = f"""
-            INSERT INTO
-              machines (number, types_machines_id, times_machines_id)
-            VALUES
-              ({number}, {types_machines_id}, {times_machines_id} );
-            """
-        self.execute_query(insert)
+        self.insert_machines(number, types_machines_id, times_machines_id)
 
     # Запрос на добавление операции с указанием id типа станка и приоритета и количества частей
     def insert_operations(self, name, weight_all, weight_part, types_machines_id, priority_id, parts_id):
+        weight_all = weight_all.replace(',', '.')
+        weight_part = weight_part.replace(',', '.')
         name = '"' + name + '"'
         insert = f"""
             INSERT INTO
@@ -79,14 +75,7 @@ class DB_API(WorkDB):
         types_machines_id = self.select_id_types_machines_or_insert(types_machines_value)
         priority_id = self.select_id_priority_or_insert(priority_value)
         parts_id = self.select_id_parts_or_insert(parts_value)
-        name = '"' + name + '"'
-        insert = f"""
-            INSERT INTO
-              operations (name, weight_all, weight_part, types_machines_id, priority_id, parts_id)
-            VALUES
-              ({name}, {weight_all}, {weight_part}, {types_machines_id}, {priority_id}, {parts_id} );
-            """
-        self.execute_query(insert)
+        self.insert_operations(name, weight_all, weight_part, types_machines_id, priority_id, parts_id)
 
     # Общий метод для получения значения (target) по значению (value) колонки (column) из таблицы (table)
     def select_simple_data(self, table, column, value, target):
