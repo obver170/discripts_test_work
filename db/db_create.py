@@ -38,7 +38,7 @@ class CreateDB(WorkDB):
         create_machines = """
             CREATE TABLE IF NOT EXISTS machines (
             id INTEGER PRIMARY KEY NOT NULL UNIQUE,
-            number INTEGER PRIMARY KEY NOT NULL UNIQUE,
+            number INTEGER NOT NULL UNIQUE,
             types_machines_id INTEGER NOT NULL,
             times_machines_id INTEGER NOT NULL,
             FOREIGN KEY (types_machines_id) REFERENCES types_machines (id),
